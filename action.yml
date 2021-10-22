@@ -1,0 +1,37 @@
+---
+name: 'Commit and push it to a protected branch'
+description: |
+  Add files, commit and push the commit to a protected branch by Github hooks using Github API
+author: Amrane Ait Zeouay
+branding:
+  icon: git-branch
+  color: green
+
+inputs:
+  repository:
+    description: "The repository's name."
+    required: true
+  create_tag:
+    description: "If the action should create a tag version."
+    required: false
+    default: false
+  branch_name:
+    description: "The repository's branch name. By default, it's 'main'."
+    required: false
+    default: "main"
+  tag_version:
+    description: "Tag version if `create_tag` is specified."
+    required: false
+  github_token:
+    description: "Github's secret token to use on requests to the Github API."
+    required: true
+  commit_message:
+    description: "The message to be used in the commit."
+    required: true
+  files_to_commit:
+    description: "Path of files to commit (the files should be seperated with ','). Example: 'package.json,main.py'."
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
