@@ -16,7 +16,7 @@ if __name__ == '__main__':
     load_dotenv(dotenv_path)
 
     github = Github(os.getenv("INPUT_GITHUB_TOKEN"))
-    repository = github.get_user().get_repo(os.getenv("INPUT_REPOSITORY"))
+    repository = github.get_user(os.getenv("INPUT_GITHUB_USER") or '').get_repo(os.getenv("INPUT_REPOSITORY"))
     file_to_add = os.getenv("INPUT_FILES_TO_COMMIT").split(',')
     origin_ref = repository.get_git_ref(f'heads/{os.getenv("INPUT_BRANCH_NAME")}')
     origin_sha = origin_ref.object.sha
