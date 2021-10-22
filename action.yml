@@ -19,7 +19,7 @@ inputs:
     description: "The repository's branch name. By default, it's 'main'."
     required: false
     default: "main"
- github_user:
+  github_user:
     description: "The contributor of the repository"
     required: false
   tag_version:
