@@ -1,0 +1,53 @@
+name: "Build main"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
+  build:
+    name: Build docker image
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Build Docker image
+      run: docker build -t push-to-protected-branch:${{ github.sha }} .
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'push-to-protected-branch:${{ github.sha }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+
+  release:
+    name: Release
+    needs: [analyze, build]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: release-drafter/release-drafter@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
