@@ -32,7 +32,7 @@ on:
     branches:
       - main
   pull_request:
-    branches: 
+    branches:
       - main
 
 jobs:
@@ -63,7 +63,7 @@ on:
     branches:
       - main
   pull_request:
-    branches: 
+    branches:
       - main
 
 jobs:
@@ -105,10 +105,16 @@ jobs:
 
 ```
 
-## TODO
+## Requirements
+You should install [Peotry](https://python-poetry.org) and run this following command to add git hooks:
 
-- [] Add poetry
-- [] Add flake8, mypy, pre-commit, blake & conventional commit
+```
+peotry install
+pre-commit install
+```
+
+## Building
+For building the project you can use peotry cli to do so, for that you can run this command `peotry build`
 
 ## Contributions
 We would :heart: contributions to improve this action. Please feel free to do so.

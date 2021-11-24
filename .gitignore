@@ -1,0 +1,4 @@
+dist
+venv
+.venv
+.skjold_cache

@@ -33,12 +33,57 @@ jobs:
   build:
     name: Build docker image
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9.0]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+
+    - name: Install Peotry
+      run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+
+    - name: Add Peotry to PATH
+      shell: bash
+      run: |
+        source $HOME/.poetry/env
+        echo "${HOME}/.poetry/bin" >> $GITHUB_PATH
+
+    - name: set PY
+      run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+
+    - uses: actions/cache@v1
+      with:
+      path: ~/.cache/pre-commit
+      key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Lint Code
+      run: |
+        poetry run black --check . --experimental-string-processing
+        poetry run flake8 push-to-protected-branch
+
+    - name: Code Typing
+      run: poetry run mypy .
+
+    - name: Dependencies security check
+      run: poetry run skjold -v audit poetry.lock
+
     - name: Build Docker image
       run: docker build -t push-to-protected-branch:${{ github.sha }} .
+
+    - name: Bump version
+      run: poetry run bump2version minor
 
   release:
     name: Release

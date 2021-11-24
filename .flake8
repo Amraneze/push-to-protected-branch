@@ -1,0 +1,33 @@
+[flake8]
+jobs = auto
+verbose = 0
+quiet = 0
+format = default
+count = True
+show-source = True
+statistics = True
+output-file = .flake8.log
+tee = True
+exclude =
+    .git,
+    __pycache__,
+    .pytest_cache,
+    .mypy_cache
+filename =
+    *.py
+disable-noqa = False
+max-line-length = 100
+max-complexity = 10
+hang-closing = True
+ignore =
+    E133,
+    E203,
+    W503
+select =
+    E,
+    W,
+    F,
+    C
+per-file-ignores =
+    __init__.py:F401,F403
+doctests = True

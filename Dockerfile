@@ -6,7 +6,9 @@ LABEL "com.github.actions.icon"="git-branch"
 LABEL "com.github.actions.color"="green"
 
 WORKDIR /action/workspace
-COPY requirements.txt main.py ./
+
+COPY requirements.txt .
+COPY ./push-to-protected-branch/src/main.py .
 
 RUN groupadd -r github && useradd -r -g github github
 RUN python3 -m pip install --no-cache-dir -r requirements.txt \
