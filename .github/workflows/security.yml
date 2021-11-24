@@ -1,0 +1,78 @@
+name: Security
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  score-card:
+    name: Dependencies check with Scorecard
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: docker run -e GITHUB_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} gcr.io/openssf/scorecard:stable --show-details --repo=https://github.com/$GITHUB_REPOSITORY
+
+  semgrep:
+    name: Semgrep Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/owasp-top-ten
+          p/r2c-security-audit
+          p/dockerfile
+
+  clair:
+    name: Clair Scan
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t push-to-protected-branch:${{ github.sha }} .
+
+    - name: Clair Scan
+      uses: santander-group/clair-scan-action@main
+      with:
+        image: 'push-to-protected-branch:${{ github.sha }}'
+        report_format: json
+        report_path: clair-report.json
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: clair-report
+        path: clair-report.json
+
+  trivy:
+    name: Dependencies check with Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t push-to-protected-branch:${{ github.sha }} .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'push-to-protected-branch:${{ github.sha }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'

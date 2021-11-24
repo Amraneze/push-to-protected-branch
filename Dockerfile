@@ -6,13 +6,15 @@ LABEL "com.github.actions.icon"="git-branch"
 LABEL "com.github.actions.color"="green"
 
 WORKDIR /action/workspace
-
 COPY requirements.txt main.py ./
 
+RUN groupadd -r github && useradd -r -g github github
 RUN python3 -m pip install --no-cache-dir -r requirements.txt \
     && apt-get -y update \
     && apt-get -y install --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
+
+USER github
 
 CMD ["/action/workspace/main.py"]
 ENTRYPOINT ["python3", "-u"]

@@ -105,5 +105,10 @@ jobs:
 
 ```
 
+## TODO
+
+- [] Add poetry
+- [] Add flake8, mypy, pre-commit, blake & conventional commit
+
 ## Contributions
 We would :heart: contributions to improve this action. Please feel free to do so.
