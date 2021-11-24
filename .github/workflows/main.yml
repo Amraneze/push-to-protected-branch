@@ -62,8 +62,8 @@ jobs:
 
     - uses: actions/cache@v1
       with:
-      path: ~/.cache/pre-commit
-      key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
     - name: Install dependencies
       run: poetry install
