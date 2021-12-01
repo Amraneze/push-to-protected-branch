@@ -74,7 +74,7 @@ jobs:
         poetry run flake8 push-to-protected-branch
 
     - name: Code Typing
-      run: poetry run mypy --config-file mypy.ini
+      run: poetry run mypy --config-file mypy.ini .
 
     - name: Dependencies security check
       run: poetry run skjold -v audit poetry.lock
