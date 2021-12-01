@@ -77,7 +77,7 @@ jobs:
       run: poetry run mypy --config-file mypy.ini .
 
     - name: Dependencies security check
-      run: poetry run skjold -v audit poetry.lock
+      run: poetry run skjold -v audit poetry.lock.backup
 
     - name: Build Docker image
       run: docker build -t push-to-protected-branch:${{ github.sha }} .
