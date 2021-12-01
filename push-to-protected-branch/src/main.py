@@ -17,7 +17,7 @@ if __name__ == "__main__":
     load_dotenv(dotenv_path)
 
     github = Github(os.getenv("INPUT_GITHUB_TOKEN"))
-    repository = github.get_repo(os.getenv("INPUT_REPOSITORY"))
+    repository = github.get_repo(str(os.getenv("INPUT_REPOSITORY")))
     file_to_add = str(os.getenv("INPUT_FILES_TO_COMMIT")).split(",")
     origin_ref = repository.get_git_ref(f'heads/{os.getenv("INPUT_BRANCH_NAME")}')
     origin_sha = origin_ref.object.sha
@@ -38,6 +38,6 @@ if __name__ == "__main__":
     tree = repository.create_git_tree(element_list, base_tree)
     parent = repository.get_git_commit(origin_sha)
     commit = repository.create_git_commit(
-        os.getenv("INPUT_COMMIT_MESSAGE"), tree, [parent]
+        str(os.getenv("INPUT_COMMIT_MESSAGE")), tree, [parent]
     )
     origin_ref.edit(commit.sha)
