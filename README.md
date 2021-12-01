@@ -11,11 +11,12 @@ Github action to add files, commit and push them to a protected branch in a Gith
 | `repository`* | | Your github respository's name | `push-to-protected-branch`
 | `create_tag` | `false` | If you want to create a tag version | `true`
 | `branch_name` | `main` | Your repository protected branch that you want to push to it | `master`
-| `github_user` | | Your Github user | `Amraneze`
 | `tag_version` | | The version that should be used to tag the release | `0.0.1`
-| `github_token`* | | The Github secret token to be use on requests to the github api | `${{ secrets.GITHUB_TOKEN }}`
-| `commit_message`* | | The message to be used as the commit message | `ci: build version v0.0.1`
+| `github_token`* | | The Github PAT to be use on requests to the github api | `${{ secrets.GITHUB_TOKEN }}`
+| `commit_message`* | | The message to be used as the commit message | `ci: build version v0.0.1 - [actions skip]`
 | `files_to_commit`* | | Comma-separated list of files path. | `package.json,build.gradle`
+
+>PS: Adding `[actions skip]` will not trigger an automatic build
 
 ## Example
 
@@ -41,13 +42,18 @@ jobs:
     name: Build & tag version
     steps:
       ...
+      - name: Bump project's version
+        id: version
+        run: |
+          PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
+          echo ::set-output name=TAG::${PACKAGE_VERSION}
       - name: Push files and tag
-        uses: Amraneze/push-to-protected-branch@v1
+        uses: Amraneze/push-to-protected-branch@latest
         with:
-          repository: 'push-to-protected-branch'
-          branch_name: 'master'
+          repository: ${{ github.repository }}
+          branch_name: ${{ github.ref_name }}
           github_token: ${{ secrets.TOKEN }}
-          commit_message: 'ci: build version v${BUILD_VERSION}'
+          commit_message: 'ci: build version v${{ steps.version.outputs.TAG }}'
           files_to_commit: 'package.json,CHANGELOG.md,README.md'
 
 ```
@@ -72,20 +78,25 @@ jobs:
     name: Build & tag version
     steps:
       ...
+      - name: Bump project's version
+        id: version
+        run: |
+          PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
+          echo ::set-output name=TAG::${PACKAGE_VERSION}
       - name: Push files and tag
-        uses: Amraneze/push-to-protected-branch@v1
+        uses: Amraneze/push-to-protected-branch@latest
         with:
-          repository: 'push-to-protected-branch'
+          repository: ${{ github.repository }}
           create_tag: true
-          branch_name: 'master'
-          tag_version: '0.0.1'
+          branch_name: ${{ github.ref_name }}
+          tag_version: ${{ steps.version.outputs.TAG }}
           github_token: ${{ secrets.TOKEN }}
-          commit_message: 'ci: build version v${BUILD_VERSION}'
+          commit_message: 'ci: build version v${{ steps.version.outputs.TAG }}'
           files_to_commit: 'package.json,CHANGELOG.md,README.md'
 
 ```
 
->Note: If you are using `${{ secrets.GITHUB_TOKEN }}` instead of your own generated token, then you should specify the user of the repository `github_user`. Example:
+### With Github App's access token
 
 ```yaml
 jobs:
@@ -93,14 +104,25 @@ jobs:
     runs-on: ubuntu-latest
     name: Build & tag version
     steps:
-      - name: Push files and tag
-        uses: Amraneze/push-to-protected-branch@v1
+      ...
+      - name: Bump project's version
+        id: version
+        run: |
+          PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
+          echo ::set-output name=TAG::${PACKAGE_VERSION}
+      - name: Generate token for GitHub App
+        id: generate-access-token
+        uses: getsentry/action-github-app-token@@v1.0.6
         with:
-          repository: 'push-to-protected-branch'
-          branch_name: 'master'
-          github_user: 'Amraneze'
-          github_token: ${{ secrets.TOKEN }}
-          commit_message: 'ci: build version v${BUILD_VERSION}'
+          app_id: ${{ secrets.GITHUB_APP_ID }}
+          private_key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+      - name: Push files and tag
+        uses: Amraneze/push-to-protected-branch@latest
+        with:
+          repository: ${{ github.repository }}
+          branch_name: ${{ github.ref_name }}
+          github_token: ${{ steps.generate-access-token.outputs.token }}
+          commit_message: 'ci: build version v${{ steps.version.outputs.TAG }}'
           files_to_commit: 'package.json,CHANGELOG.md,README.md'
 
 ```
