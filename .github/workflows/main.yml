@@ -82,8 +82,16 @@ jobs:
     - name: Build Docker image
       run: docker build -t push-to-protected-branch:${{ github.sha }} .
 
+    - name: Configure Git
+      run: |
+        git config user.name "${GITHUB_ACTOR}"
+        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
     - name: Bump version
       run: poetry run bump2version minor
+
+    - name: Push version and tag changes
+      run: git push
 
   release:
     name: Release
